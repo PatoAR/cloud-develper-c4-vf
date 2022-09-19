@@ -1,6 +1,6 @@
 org: pja2004
-app: sls-todo-app
-service: sls-todo-app
+app: sls-todo-app-vf
+service: sls-todo-app-vf
 
 plugins:
   - serverless-webpack
@@ -16,9 +16,9 @@ provider:
   region: ${opt:region, 'us-east-1'}
 
   environment:
-    TODOS_TABLE: Todos-C4-${self:provider.stage}
+    TODOS_TABLE: Todos-c4vf-${self:provider.stage}
     USER_ID_INDEX: UserIndex
-    ATTACHMENT_S3_BUCKET: 'serverless-c4-pato-${self:provider.stage}'
+    ATTACHMENT_S3_BUCKET: 'serverless-c4vf-pato-${self:provider.stage}'
     SIGNED_URL_EXPIRATION: 300
 
   tracing:
