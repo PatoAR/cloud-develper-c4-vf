@@ -1,16 +1,13 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
-import * as AWS from 'aws-sdk'
 import { cors, httpErrorHandler } from 'middy/middlewares'
+import { updateTodo } from '../../businessLogic/todos'
 import { createLogger } from '../../../utils/logger'
 const logger = createLogger('updateTodo')
 
 import { UpdateTodoRequest } from '../../../requests/UpdateTodoRequest'
 import { getUserId } from '../utils'
-
-const docClient = new AWS.DynamoDB.DocumentClient()
-const todosTable = process.env.TODOS_TABLE
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -26,6 +23,7 @@ export const handler = middy(
           body: `Error updating Todo with id: ${todoId}`
       }
     }
+    logger.info('Succesfully updated todo ', todoId)
     return {
       statusCode: 200,
       body: `Todo id: ${todoId} has been updated`
@@ -40,40 +38,3 @@ handler
       credentials: true
     })
 )
-
-async function updateTodo(userId: string, todoId: string, todo: UpdateTodoRequest) {
-    let updated = false
-    try {
-      await docClient.update({
-        TableName: todosTable,
-          Key: {
-            userId,
-            todoId
-          },
-          UpdateExpression:
-            'set #name = :name, #dueDate = :duedate, #done = :done',
-          ExpressionAttributeValues: {
-            ':name': todo.name,
-            ':duedate': todo.dueDate,
-            ':done': todo.done
-          },
-          ExpressionAttributeNames: {
-            '#name': 'name',
-            '#dueDate': 'dueDate',
-            '#done': 'done'
-          }
-        }).promise()
-        updated = true
-    } catch (e) {
-      logger.error('Error updating Todo', {
-        error: e,
-        data: {
-          userId,
-          todoId,
-          todo
-        }
-      })
-    }
-
-    return updated
-}
